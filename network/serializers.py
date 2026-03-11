@@ -1,10 +1,12 @@
 from rest_framework import serializers
 
-from network.models import RetailNetwork
+from network.models import ElectronicsRetailNetwork
 
 
-class RetailNetworkSerializer(serializers.ModelSerializer):
+class ElectroRetailNetworkSerializer(serializers.ModelSerializer):
+    """Сериализатор розничной сети электроники."""
+
     class Meta:
-        model = RetailNetwork
+        model = ElectronicsRetailNetwork
         fields = '__all__'
         read_only_fields = ('debt',) # Запрет редактирования задолженности

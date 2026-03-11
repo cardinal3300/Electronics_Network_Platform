@@ -3,6 +3,7 @@ from django.db import models
 
 
 class Product(models.Model):
+    """Модель продукта розничной сети электроники."""
 
     name = models.CharField(max_length=200, verbose_name='Название')
     model = models.CharField(max_length=200, verbose_name='Модель')
@@ -12,8 +13,8 @@ class Product(models.Model):
         return f'{self.name} ({self.model})'
 
 
-class RetailNetwork(models.Model):
-    """Модель розничной сети электроники."""
+class ElectronicsRetailNetwork(models.Model):
+    """Модель розничной сети электроники с иерархией."""
 
     LEVEL_CHOICES = (
         (0, 'Завод'),
@@ -48,8 +49,29 @@ class RetailNetwork(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
 
     def clean(self):
+
         if self.provider == self:
             raise ValidationError('Объект не может ссылаться сам на себя')
 
+        provider = self.provider
+
+        while provider:
+
+            if provider == self:
+                raise ValidationError(
+                    'Нельзя создать циклическую иерархию'
+                )
+
+            provider = provider.provider
+
+        if self.provider and self.provider.level >= self.level:
+                raise ValidationError(
+                    'Поставщик должен быть выше по иерархии'
+                )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return self.name
+        return f'{self.name} ({self.level})'
